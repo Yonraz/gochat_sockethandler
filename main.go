@@ -11,8 +11,8 @@ import (
 )
 
 func init() {
-	time.Sleep(15 * time.Second)
 	fmt.Println("Application starting...")
+	time.Sleep(1 * time.Minute)
 	initializers.LoadEnvVariables()
 	initializers.ConnectToRabbitmq()
 	initializers.ConnectToRedis()
@@ -32,6 +32,7 @@ func main() {
 	}()
 	wsHandler := ws.NewHandler(initializers.RedisClient)
 	router.POST("/ws/createRoom", wsHandler.CreateRoom)
+	router.GET("/ws/joinRoom/:roomId", wsHandler.JoinRoom)
 
 	go wsHandler.Run()
 	router.Run()
