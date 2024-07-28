@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -56,12 +57,13 @@ func (h *Handler) CreateRoom(ctx *gin.Context) {
 func (h *Handler) JoinRoom(ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
+		log.Printf("error upgrading to ws connection: %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	roomID := ctx.Param("roomId")
-	username := ctx.Param("username")
+	username := ctx.Query("username")
 	client := &Client{
 		Conn:     conn,
 		Message:  make(chan *Message, 10),
@@ -69,23 +71,10 @@ func (h *Handler) JoinRoom(ctx *gin.Context) {
 		RoomID:   roomID,
 	}
 
-	c := context.Background()
-	roomKey := "room:" + roomID
-
-	h.Clients[username] = client
-	h.hub.SAdd(c, roomKey+":clients", username)
-
-	msg := &Message{
-		Content: "User " + username + " has joined the room!",
-		RoomID:  roomID,
-		Sender:  username,
-	}
-
 	h.Register <- client
-	h.Broadcast <- msg
 
-	go client.readPump(h)
-	go client.writePump()
+	go client.writePump() // handle writes on other goroutine
+	client.readPump(h)
 }
 
 func (h *Handler) handleDisconnection(client *Client) {
@@ -97,9 +86,22 @@ func (h *Handler) handleDisconnection(client *Client) {
 	delete(h.Clients, client.Username)
 }
 
+func (h *Handler) handleConnection(client *Client) {
+	c := context.Background()
+	roomKey := "room:" + client.RoomID
+
+	h.Clients[client.Username] = client
+	h.hub.SAdd(c, roomKey+":clients", client.Username)
+	mems := h.hub.SMembers(c, roomKey+":clients")
+	print := fmt.Sprintf("Members: %v", mems)
+	fmt.Println(print)
+}
+
 func (h *Handler) Run() {
 	for {
 		select {
+		case client := <-h.Register:
+			h.handleConnection(client)
 		case client := <-h.Unregister:
 			h.handleDisconnection(client)
 			client.Conn.Close()
