@@ -57,7 +57,7 @@ func (h *Handler) CreateRoom(ctx *gin.Context) {
 func (h *Handler) JoinRoom(ctx *gin.Context) {
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		log.Printf("error upgrading to ws connection: %v", err)
+		log.Printf("error upgrading to ws connection: %v\n", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -92,9 +92,6 @@ func (h *Handler) handleConnection(client *Client) {
 
 	h.Clients[client.Username] = client
 	h.hub.SAdd(c, roomKey+":clients", client.Username)
-	mems := h.hub.SMembers(c, roomKey+":clients")
-	print := fmt.Sprintf("Members: %v", mems)
-	fmt.Println(print)
 }
 
 func (h *Handler) Run() {
