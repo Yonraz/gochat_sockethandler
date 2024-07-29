@@ -2,7 +2,6 @@ package ws
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yonraz/gochat_sockethandler/initializers"
+	"github.com/yonraz/gochat_sockethandler/middlewares"
 	"github.com/yonraz/gochat_sockethandler/ws"
 )
 
@@ -31,8 +32,10 @@ func main() {
 		}
 	}()
 	wsHandler := ws.NewHandler(initializers.RedisClient)
-	router.POST("/ws/createRoom", wsHandler.CreateRoom)
-	router.GET("/ws/joinRoom/:roomId", wsHandler.JoinRoom)
+	router.Use(middlewares.CurrentUser)
+	router.Use(middlewares.RequireAuth)
+	router.POST("/ws/chat/createRoom", wsHandler.CreateRoom)
+	router.GET("/ws/chat/joinRoom/:roomId", wsHandler.JoinRoom)
 
 	go wsHandler.Run()
 	router.Run()
