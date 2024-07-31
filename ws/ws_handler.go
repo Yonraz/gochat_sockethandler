@@ -115,7 +115,7 @@ func (h *Handler) Run() {
 				if client, ok := h.Clients[username]; ok {
 					select {
 					case client.Message <- message:
-						// Successfully sent message to client
+
 					default:
 						// Handle case where message channel might be full
 						log.Println("Message channel full for client:", username)
