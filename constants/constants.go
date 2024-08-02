@@ -3,6 +3,7 @@ package constants
 type Queues string
 type RoutingKey string
 type Exchange string
+type MessageType string
 
 const (
 	UserEventsExchange    Exchange = "UserEventsExchange"
@@ -23,4 +24,9 @@ const (
 	MessageSentQueue      Queues = "MessageSentQueue"
 	MessageDeliveredQueue Queues = "MessageDeliveredQueue"
 	MessageReadQueue      Queues = "MessageReadQueue"
+)
+
+const (
+	MessageUpdate MessageType = "message.update"
+	MessageCreate MessageType = "message.create"
 )

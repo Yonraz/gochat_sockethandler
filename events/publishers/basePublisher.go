@@ -37,7 +37,7 @@ func (p *Publisher) Publish(exchange constants.Exchange, routingKey constants.Ro
 	if err != nil {
 		return fmt.Errorf("failed to publish message: %w", err)
 	}
-	fmt.Printf("Published %v to exchange %v with key %v\n", body, exchange, routingKey)
+	fmt.Printf("Published %v to exchange %v with key %v\n", string(bodyBytes), exchange, routingKey)
 	
 	return nil
 }

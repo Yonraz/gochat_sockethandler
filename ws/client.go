@@ -8,6 +8,7 @@ import (
 	"github.com/yonraz/gochat_sockethandler/constants"
 	"github.com/yonraz/gochat_sockethandler/events/publishers"
 	"github.com/yonraz/gochat_sockethandler/initializers"
+	"github.com/yonraz/gochat_sockethandler/models"
 	"gorm.io/gorm"
 )
 
@@ -25,8 +26,8 @@ type Message struct {
 	Receiver string `json:"receiver"`
 	Content string `json:"content"`
 	RoomID string `json:"roomId"`
-	Type constants.RoutingKey `json:"type"`
-	Status string `json:"status"`
+	Type constants.MessageType `json:"type"`
+	Status constants.RoutingKey `json:"status"`
 }
 
 func (client *Client) readPump(handler *Handler) {
@@ -42,11 +43,12 @@ func (client *Client) readPump(handler *Handler) {
 			}
 			break
 		}
-		var msg *Message
+		var msg *models.WsMessage
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
 			log.Panicf("error unmarshaling while reading message: %v", err)
 		}
+
 		
 		handler.Broadcast <- &Message{
 			Content: msg.Content,
@@ -58,7 +60,7 @@ func (client *Client) readPump(handler *Handler) {
 		}
 		p := publishers.NewPublisher(initializers.RmqChannel)
 
-		p.MessageEvent(msg.Type, message)
+		p.MessageEvent(msg.Status, message)
 	}
 }
 
