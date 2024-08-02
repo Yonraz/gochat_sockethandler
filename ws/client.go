@@ -9,6 +9,7 @@ import (
 	"github.com/yonraz/gochat_sockethandler/events/publishers"
 	"github.com/yonraz/gochat_sockethandler/initializers"
 	"github.com/yonraz/gochat_sockethandler/models"
+
 	"gorm.io/gorm"
 )
 
@@ -22,6 +23,7 @@ type Client struct {
 
 type Message struct {
 	gorm.Model
+	ID string `json:"id"  gorm:"primary key"`
 	Sender string `json:"sender"`
 	Receiver string `json:"receiver"`
 	Content string `json:"content"`
@@ -43,14 +45,17 @@ func (client *Client) readPump(handler *Handler) {
 			}
 			break
 		}
+		log.Printf("reading message: %v", string(message))
 		var msg *models.WsMessage
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
-			log.Panicf("error unmarshaling while reading message: %v", err)
+			log.Panicf("error unmarshaling while reading message %v: %v", string(message), err)
+			break
 		}
 
 		
 		handler.Broadcast <- &Message{
+			ID: msg.ID,
 			Content: msg.Content,
 			RoomID: client.RoomID,
 			Sender: client.Username,

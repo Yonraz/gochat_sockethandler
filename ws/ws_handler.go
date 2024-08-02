@@ -112,7 +112,7 @@ func (h *Handler) Run() {
 
 			// Send the message to each client
 			for _, username := range clients {
-				if client, ok := h.Clients[username]; ok {
+				if client, ok := h.Clients[username]; ok && message.Sender != client.Username {
 					select {
 					case client.Message <- message:
 
