@@ -6,10 +6,13 @@ import (
 )
 
 type WsMessage struct {
+	gorm.Model
 	ID      	string 					`json:"id" gorm:"primary key"`
-	Content 	string					`json:"content"`		
+	Content 	string					`json:"content"`	
+	Sender 		string 					`json:"sender"`	
 	Receiver 	string					`json:"receiver"`
 	Status  	constants.RoutingKey	`json:"status"`	
 	Type 		constants.MessageType	`json:"type"`
-	gorm.Model
+	Read 		bool					`json:"read"`
+	Sent 		bool					`json:"sent"`
 }

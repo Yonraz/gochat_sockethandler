@@ -30,6 +30,8 @@ type Message struct {
 	RoomID string `json:"roomId"`
 	Type constants.MessageType `json:"type"`
 	Status constants.RoutingKey `json:"status"`
+	Read bool `json:"read"`
+	Sent bool `json:"sent"`
 }
 
 func (client *Client) readPump(handler *Handler) {
@@ -52,9 +54,10 @@ func (client *Client) readPump(handler *Handler) {
 			log.Panicf("error unmarshaling while reading message %v: %v", string(message), err)
 			break
 		}
+		msg.Sender = client.Username
 
-		
-		handler.Broadcast <- &Message{
+
+		messageToSend := &Message{
 			ID: msg.ID,
 			Content: msg.Content,
 			RoomID: client.RoomID,
@@ -62,10 +65,14 @@ func (client *Client) readPump(handler *Handler) {
 			Receiver: msg.Receiver,
 			Type: msg.Type,
 			Status: msg.Status,
+			Read: msg.Read,
+			Sent: msg.Sent,
 		}
+
+		handler.Broadcast <- messageToSend
 		p := publishers.NewPublisher(initializers.RmqChannel)
 
-		p.MessageEvent(msg.Status, message)
+		p.MessageEvent(msg.Status, msg)
 	}
 }
 

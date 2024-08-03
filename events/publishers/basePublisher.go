@@ -17,6 +17,7 @@ func NewPublisher(channel *amqp.Channel) *Publisher {
 }
 
 func (p *Publisher) Publish(exchange constants.Exchange, routingKey constants.RoutingKey, body interface{}) error {
+	fmt.Printf("Received message %v for publishing...\n", body)
 	bodyBytes, err := json.Marshal(body)
 
 	if err != nil {
