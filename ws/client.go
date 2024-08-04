@@ -65,7 +65,7 @@ func (client *Client) readPump(handler *Handler) {
 			Receiver: msg.Receiver,
 			Type: msg.Type,
 			Status: msg.Status,
-			Read: msg.Read,
+			Read: msg.Status == constants.MessageReadKey,
 			Sent: msg.Sent,
 		}
 
