@@ -8,6 +8,7 @@ import (
 type WsMessage struct {
 	gorm.Model
 	ID      	string 					`json:"id" gorm:"primary key"`
+	ConversationID string `json:"conversationId" gorm:"foreign key"`
 	Content 	string					`json:"content"`	
 	Sender 		string 					`json:"sender"`	
 	Receiver 	string					`json:"receiver"`
@@ -16,3 +17,4 @@ type WsMessage struct {
 	Read 		bool					`json:"read"`
 	Sent 		bool					`json:"sent"`
 }
+
