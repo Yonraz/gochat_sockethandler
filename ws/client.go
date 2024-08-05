@@ -38,47 +38,50 @@ type Message struct {
 
 func (client *Client) readPump(handler *Handler) {
 	defer func() {
-			handler.Unregister <- client
-			client.Conn.Close()
+		handler.Unregister <- client
+		client.Conn.Close()
 	}()
 	for {
 		_, message, err := client.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v\n", err)
+				log.Printf("unexpected close error: %v\n", err)
 			}
 			break
 		}
 		log.Printf("reading message: %v", string(message))
-		var msg *models.WsMessage
+		var msg models.WsMessage
 		err = json.Unmarshal(message, &msg)
 		if err != nil {
-			log.Panicf("error unmarshaling while reading message %v: %v", string(message), err)
+			log.Printf("error unmarshaling while reading message %v: %v", string(message), err)
 			break
 		}
 		msg.Sender = client.Username
 
-		if (msg.Type == constants.MessageCreate) {
+		if msg.Type == constants.MessageCreate {
 			msg.CreatedAt = time.Now()
 		}
+
 		messageToSend := &Message{
-			ID: msg.ID,
-			Content: msg.Content,
-			RoomID: client.RoomID,
-			Sender: client.Username,
-			Receiver: msg.Receiver,
-			Type: msg.Type,
-			Status: msg.Status,
-			Read: msg.Status == constants.MessageReadKey,
-			Sent: msg.Sent,
+			ID:        msg.ID,
+			Content:   msg.Content,
+			RoomID:    client.RoomID,
+			Sender:    client.Username,
+			Receiver:  msg.Receiver,
+			Type:      msg.Type,
+			Status:    msg.Status,
+			Read:      msg.Status == constants.MessageReadKey,
+			Sent:      msg.Sent,
 			CreatedAt: msg.CreatedAt,
 			UpdatedAt: msg.UpdatedAt,
 		}
 
+		log.Printf("Broadcasting message: %v\n", messageToSend)
 		handler.Broadcast <- messageToSend
-		p := publishers.NewPublisher(initializers.RmqChannel)
 
-		p.MessageEvent(msg.Status, msg)
+		log.Printf("Publishing message event with status %v\n", msg.Status)
+		p := publishers.NewPublisher(initializers.RmqChannel)
+		p.MessageEvent(msg.Status, &msg)
 	}
 }
 
