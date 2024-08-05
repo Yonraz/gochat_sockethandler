@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/yonraz/gochat_sockethandler/constants"
@@ -22,7 +23,6 @@ type Client struct {
 }
 
 type Message struct {
-	gorm.Model
 	ID string `json:"id"  gorm:"primary key"`
 	Sender string `json:"sender"`
 	Receiver string `json:"receiver"`
@@ -32,6 +32,8 @@ type Message struct {
 	Status constants.RoutingKey `json:"status"`
 	Read bool `json:"read"`
 	Sent bool `json:"sent"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (client *Client) readPump(handler *Handler) {
@@ -56,7 +58,9 @@ func (client *Client) readPump(handler *Handler) {
 		}
 		msg.Sender = client.Username
 
-
+		if (msg.Type == constants.MessageCreate) {
+			msg.CreatedAt = time.Now()
+		}
 		messageToSend := &Message{
 			ID: msg.ID,
 			Content: msg.Content,
@@ -67,6 +71,8 @@ func (client *Client) readPump(handler *Handler) {
 			Status: msg.Status,
 			Read: msg.Status == constants.MessageReadKey,
 			Sent: msg.Sent,
+			CreatedAt: msg.CreatedAt,
+			UpdatedAt: msg.UpdatedAt,
 		}
 
 		handler.Broadcast <- messageToSend
