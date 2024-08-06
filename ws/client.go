@@ -57,6 +57,7 @@ func (client *Client) readPump(handler *Handler) {
 			break
 		}
 		msg.Sender = client.Username
+		msg.Read = msg.Status == constants.MessageReadKey
 
 		if msg.Type == constants.MessageCreate {
 			msg.CreatedAt = time.Now()
@@ -70,7 +71,7 @@ func (client *Client) readPump(handler *Handler) {
 			Receiver:  msg.Receiver,
 			Type:      msg.Type,
 			Status:    msg.Status,
-			Read:      msg.Status == constants.MessageReadKey,
+			Read:      msg.Read,
 			Sent:      msg.Sent,
 			CreatedAt: msg.CreatedAt,
 			UpdatedAt: msg.UpdatedAt,
@@ -81,7 +82,15 @@ func (client *Client) readPump(handler *Handler) {
 
 		log.Printf("Publishing message event with status %v\n", msg.Status)
 		p := publishers.NewPublisher(initializers.RmqChannel)
-		p.MessageEvent(msg.Status, &msg)
+		if msg.Type == constants.MessageUpdate {
+			go func(){
+				log.Println("Message is type update. sleeping 200ms")
+				time.Sleep(time.Millisecond * 200)
+				p.MessageEvent(msg.Status, &msg)
+			}()
+		} else {
+			p.MessageEvent(msg.Status, &msg)
+		}
 	}
 }
 
