@@ -51,8 +51,10 @@ func DeclareAndBindQueue(
 
 func DeclareQueues(channel *amqp.Channel) error {
 	queues := []queueConstructor{
-		{Queue: constants.MessageSentQueue, Key: constants.MessageSentKey, Exchange: constants.MessageEventsExchange},
-		{Queue: constants.MessageReadQueue, Key: constants.MessageReadKey, Exchange: constants.MessageEventsExchange},
+		{Queue: constants.Messages_MessageSentQueue, Key: constants.MessageSentKey, Exchange: constants.MessageEventsExchange},
+		{Queue: constants.Notifications_MessageSentQueue, Key: constants.MessageSentKey, Exchange: constants.MessageEventsExchange},
+		{Queue: constants.Messages_MessageReadQueue, Key: constants.MessageReadKey, Exchange: constants.MessageEventsExchange},
+		{Queue: constants.Notifications_MessageReadQueue, Key: constants.MessageReadKey, Exchange: constants.MessageEventsExchange},
 	}
 
 	for _, q := range queues {
