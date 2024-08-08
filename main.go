@@ -35,7 +35,7 @@ func main() {
 	router.Use(middlewares.CurrentUser)
 	router.Use(middlewares.RequireAuth)
 	router.POST("/ws/chat/createRoom", wsHandler.CreateRoom)
-	router.GET("/ws/chat/joinRoom/:roomId", wsHandler.JoinRoom)
+	router.GET("/ws/chat/joinRoom/:roomId", middlewares.CurrentUser, middlewares.RequireAuth, wsHandler.JoinRoom)
 
 	go wsHandler.Run()
 	router.Run()
