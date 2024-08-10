@@ -27,7 +27,7 @@ func RequireAuth(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	if err := validateToken(tokenstring, ctx); err != nil {
+	if err := validateToken(tokenstring); err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		ctx.Abort()
@@ -38,7 +38,7 @@ func RequireAuth(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func validateToken(tokenString string, ctx *gin.Context) (error) {
+func validateToken(tokenString string) (error) {
 	// Retrieve the secret key from environment variables or configuration
 	secretKey := os.Getenv("JWT_KEY")
 	if secretKey == "" {
